@@ -1,7 +1,4 @@
-# Read Me First
+# Entities relations research
 
-### User1 and Cookie1
-The Simple models without any relations
-
-### User2 and Cookie2
-The Simple models without any relations
+* The source code separated by use-cases
+* All checks are implemented in the tests 
