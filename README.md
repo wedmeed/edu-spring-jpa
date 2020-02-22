@@ -1,3 +1,3 @@
 # edu-spring-jpa
 
-The training application for jpa features researches
+Training applications for jpa features researches
