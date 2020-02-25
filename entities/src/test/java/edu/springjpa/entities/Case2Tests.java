@@ -51,11 +51,14 @@ public class Case2Tests {
         good.setMyLord(fedor);
         good.setMyOldLord(kesha);
         good = crepo.save(good);
+        Cookie2 bad = crepo.save(new Cookie2(null, "bad", null, null));
+        bad.setMyLord(fedor);
+        bad = crepo.save(bad);
         crepo.flush();
 
         Optional<Cookie2> goodFromDB = crepo.findById(good.getId());
         assertTrue(goodFromDB.isPresent());
-        assertEquals(crepo.countByMyLord_Id(fedor.getId()),1);
+        assertEquals(crepo.countByMyLord_Id(fedor.getId()),2);
         assertEquals(crepo.countByMyOldLord_Id(kesha.getId()),1);
     }
 
@@ -66,16 +69,17 @@ public class Case2Tests {
         User2 kesha = urepo.save(new User2(null, "Enokentiy"));
         urepo.flush();
 
-        // you cannot use an unmanaged instance (no proxy instance) to arrange relations
+        // you cannot use an unmanaged instance to arrange relations
         // with saved entities
         assertThrows(InvalidDataAccessApiUsageException.class, () ->
                 crepo.save(new Cookie2(null, "good", fedor, null)));
 
 
-        // but you can use an unmanaged instance (no proxy instance) to arrange relations
+        // but you can use an unmanaged instance to arrange relations
         // with saved entities if there is no cascading
         Cookie2 bad = crepo.save(new Cookie2(null, "bad", null, kesha));
         crepo.flush();
+
         Optional<Cookie2> badFromDB = crepo.findById(bad.getId());
         assertTrue(badFromDB.isPresent());
         assertEquals(crepo.countByMyOldLord_Id(kesha.getId()),1);
@@ -87,7 +91,7 @@ public class Case2Tests {
         User2 fedor = new User2(null, "Fedor");
         User2 kesha = new User2(null, "Enokentiy");
 
-        // you can use an unmanaged instance (no proxy instance) to arrange relations
+        // you can use an unmanaged instance to arrange relations
         // with unsaved entities if a used cascadeType supports it
         Cookie2 good = crepo.save(new Cookie2(null, "good", fedor, null));
         urepo.flush();
@@ -99,7 +103,7 @@ public class Case2Tests {
         assertTrue(fedorFromDB.isPresent());
         assertTrue(goodFromDB.isPresent());
 
-        // you cannot use an unmanaged instance (no proxy instance) to arrange relations
+        // you cannot use an unmanaged instance to arrange relations
         // with unsaved entities if a used cascadeType doesn't support it
         assertThrows(InvalidDataAccessApiUsageException.class,
                 () -> crepo.save(new Cookie2(null, "bad", null, kesha)));
@@ -117,7 +121,7 @@ public class Case2Tests {
         // you can use a managed proxy instance to arrange relations
         // with unsaved entities if a used cascadeType supports it
         good.setMyLord(fedor);
-        crepo.save(good);
+        good = crepo.save(good);
         urepo.flush();
         crepo.flush();
 
@@ -130,8 +134,9 @@ public class Case2Tests {
         // you cannot use a managed proxy instance to arrange relations
         // with unsaved entities if a used cascadeType doesn't support it
         good.setMyOldLord(kesha);
+        Cookie2 goodForCheck = good;
         assertThrows(InvalidDataAccessApiUsageException.class,
-                () -> crepo.save(good));
+                () -> crepo.save(goodForCheck));
 
     }
 
@@ -147,7 +152,7 @@ public class Case2Tests {
         assertTrue(fedorFromDB.isPresent());
         assertTrue(goodFromDB.isPresent());
         assertNotNull(goodFromDB.get().getMyLord());
-        assertEquals(goodFromDB.get().getMyLord(), fedor);
+        assertEquals(goodFromDB.get().getMyLord(), fedorFromDB.get());
 
     }
 
@@ -181,9 +186,7 @@ public class Case2Tests {
 
 
         crepo.deleteAll();
-        assertFalse(crepo.findById(soso.getId()).isPresent());
         urepo.deleteAll();
-        assertFalse(urepo.findById(jora.getId()).isPresent());
         crepo.flush();
         urepo.flush();
 
@@ -200,12 +203,12 @@ public class Case2Tests {
         Cookie2 bad = crepo.save(new Cookie2(null, "bad", null, null));
         good.setMyLord(fedor);
         bad.setMyOldLord(kesha);
-        crepo.save(good);
-        crepo.save(bad);
+        good = crepo.save(good);
+        bad = crepo.save(bad);
         crepo.flush();
         urepo.flush();
 
-        // cannot deleted child because of the foreign key constraints
+        // cannot delete a not-owner entity because of the foreign key constraints
         assertThrows(DataIntegrityViolationException.class,
                 () -> urepo.delete(fedor));
         assertThrows(DataIntegrityViolationException.class,
@@ -213,6 +216,7 @@ public class Case2Tests {
     }
 
     @Test
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void testCanDeleteByRelations() {
         User2 fedor = urepo.save(new User2(null, "Fedor"));
         User2 kesha = urepo.save(new User2(null, "Enokentiy"));
@@ -220,8 +224,8 @@ public class Case2Tests {
         Cookie2 bad = crepo.save(new Cookie2(null, "bad", null, null));
         good.setMyLord(fedor);
         bad.setMyOldLord(kesha);
-        crepo.save(good);
-        crepo.save(bad);
+        good = crepo.save(good);
+        bad = crepo.save(bad);
         crepo.flush();
         urepo.flush();
 
