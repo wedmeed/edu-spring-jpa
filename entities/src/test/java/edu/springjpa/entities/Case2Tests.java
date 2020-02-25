@@ -47,19 +47,19 @@ public class Case2Tests {
         urepo.flush();
 
         //you need to use the returned proxy instance to arrange relations with saved entities
-        Cookie2 good = crepo.save(new Cookie2(null, "good", null, null));
-        good.setMyLord(fedor);
-        good.setMyOldLord(kesha);
-        good = crepo.save(good);
-        Cookie2 bad = crepo.save(new Cookie2(null, "bad", null, null));
-        bad.setMyLord(fedor);
-        bad = crepo.save(bad);
+        Cookie2 goodOne = crepo.save(new Cookie2(null, "good", null, null));
+        goodOne.setMyLord(fedor);
+        goodOne.setMyOldLord(kesha);
+        goodOne = crepo.save(goodOne);
+        Cookie2 badOne = crepo.save(new Cookie2(null, "bad", null, null));
+        badOne.setMyLord(fedor);
+        crepo.save(badOne);
         crepo.flush();
 
-        Optional<Cookie2> goodFromDB = crepo.findById(good.getId());
-        assertTrue(goodFromDB.isPresent());
-        assertEquals(crepo.countByMyLord_Id(fedor.getId()),2);
-        assertEquals(crepo.countByMyOldLord_Id(kesha.getId()),1);
+        Optional<Cookie2> goodOneFromDB = crepo.findById(goodOne.getId());
+        assertTrue(goodOneFromDB.isPresent());
+        assertEquals(2, crepo.countByMyLord_Id(fedor.getId()));
+        assertEquals(1, crepo.countByMyOldLord_Id(kesha.getId()));
     }
 
     @Test
@@ -77,12 +77,12 @@ public class Case2Tests {
 
         // but you can use an unmanaged instance to arrange relations
         // with saved entities if there is no cascading
-        Cookie2 bad = crepo.save(new Cookie2(null, "bad", null, kesha));
+        Cookie2 badOne = crepo.save(new Cookie2(null, "bad", null, kesha));
         crepo.flush();
 
-        Optional<Cookie2> badFromDB = crepo.findById(bad.getId());
-        assertTrue(badFromDB.isPresent());
-        assertEquals(crepo.countByMyOldLord_Id(kesha.getId()),1);
+        Optional<Cookie2> badOneFromDB = crepo.findById(badOne.getId());
+        assertTrue(badOneFromDB.isPresent());
+        assertEquals(1, crepo.countByMyOldLord_Id(kesha.getId()));
     }
 
     @Test
@@ -93,15 +93,15 @@ public class Case2Tests {
 
         // you can use an unmanaged instance to arrange relations
         // with unsaved entities if a used cascadeType supports it
-        Cookie2 good = crepo.save(new Cookie2(null, "good", fedor, null));
+        Cookie2 goodOne = crepo.save(new Cookie2(null, "good", fedor, null));
         urepo.flush();
         crepo.flush();
 
         Optional<User2> fedorFromDB = urepo.findFirstByName(fedor.getName());
-        Optional<Cookie2> goodFromDB = crepo.findById(good.getId());
+        Optional<Cookie2> goodOneFromDB = crepo.findById(goodOne.getId());
 
         assertTrue(fedorFromDB.isPresent());
-        assertTrue(goodFromDB.isPresent());
+        assertTrue(goodOneFromDB.isPresent());
 
         // you cannot use an unmanaged instance to arrange relations
         // with unsaved entities if a used cascadeType doesn't support it
@@ -115,28 +115,28 @@ public class Case2Tests {
         User2 fedor = new User2(null, "Fedor");
         User2 kesha = new User2(null, "Enokentiy");
 
-        Cookie2 good = crepo.save(new Cookie2(null, "good", null, null));
+        Cookie2 goodOne = crepo.save(new Cookie2(null, "good", null, null));
         crepo.flush();
 
         // you can use a managed proxy instance to arrange relations
         // with unsaved entities if a used cascadeType supports it
-        good.setMyLord(fedor);
-        good = crepo.save(good);
+        goodOne.setMyLord(fedor);
+        goodOne = crepo.save(goodOne);
         urepo.flush();
         crepo.flush();
 
         Optional<User2> fedorFromDB = urepo.findFirstByName(fedor.getName());
-        Optional<Cookie2> goodFromDB = crepo.findById(good.getId());
+        Optional<Cookie2> goodOneFromDB = crepo.findById(goodOne.getId());
 
         assertTrue(fedorFromDB.isPresent());
-        assertTrue(goodFromDB.isPresent());
+        assertTrue(goodOneFromDB.isPresent());
 
         // you cannot use a managed proxy instance to arrange relations
         // with unsaved entities if a used cascadeType doesn't support it
-        good.setMyOldLord(kesha);
-        Cookie2 goodForCheck = good;
+        goodOne.setMyOldLord(kesha);
+        Cookie2 goodOneForCheck = goodOne;
         assertThrows(InvalidDataAccessApiUsageException.class,
-                () -> crepo.save(goodForCheck));
+                () -> crepo.save(goodOneForCheck));
 
     }
 
@@ -144,15 +144,15 @@ public class Case2Tests {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void testCanReadUnderTransaction() {
         User2 fedor = new User2(null, "Fedor");
-        Cookie2 good = crepo.save(new Cookie2(null, "good", fedor, null));
+        Cookie2 goodOne = crepo.save(new Cookie2(null, "good", fedor, null));
 
         Optional<User2> fedorFromDB = urepo.findById(fedor.getId());
-        Optional<Cookie2> goodFromDB = crepo.findById(good.getId());
+        Optional<Cookie2> goodOneFromDB = crepo.findById(goodOne.getId());
 
         assertTrue(fedorFromDB.isPresent());
-        assertTrue(goodFromDB.isPresent());
-        assertNotNull(goodFromDB.get().getMyLord());
-        assertEquals(goodFromDB.get().getMyLord(), fedorFromDB.get());
+        assertTrue(goodOneFromDB.isPresent());
+        assertNotNull(goodOneFromDB.get().getMyLord());
+        assertEquals(fedorFromDB.get(), goodOneFromDB.get().getMyLord());
 
     }
 
@@ -161,14 +161,14 @@ public class Case2Tests {
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void testCannotReadWithoutTransaction() {
         User2 fedor = new User2(null, "Fedor");
-        Cookie2 good = crepo.save(new Cookie2(null, "good", fedor, null));
+        Cookie2 goodOne = crepo.save(new Cookie2(null, "good", fedor, null));
 
         Optional<User2> fedorFromDB = urepo.findById(fedor.getId());
-        Optional<Cookie2> goodFromDB = crepo.findById(good.getId());
+        Optional<Cookie2> goodOneFromDB = crepo.findById(goodOne.getId());
 
         assertTrue(fedorFromDB.isPresent());
-        assertTrue(goodFromDB.isPresent());
-        assertThrows(LazyInitializationException.class, () -> goodFromDB.get().getMyLord().getName());
+        assertTrue(goodOneFromDB.isPresent());
+        assertThrows(LazyInitializationException.class, () -> goodOneFromDB.get().getMyLord().getName());
     }
 
 
@@ -178,9 +178,9 @@ public class Case2Tests {
         User2 fedor = new User2(null, "Fedor");
         User2 kesha = new User2(null, "Enokentiy");
         User2 jora = new User2(null, "George");
-        Cookie2 good = crepo.save(new Cookie2(null, "good", fedor, null));
-        Cookie2 bad = crepo.save(new Cookie2(null, "bad", kesha, null));
-        Cookie2 soso = crepo.save(new Cookie2(null, "so-so", jora, null));
+        crepo.save(new Cookie2(null, "good", fedor, null));
+        crepo.save(new Cookie2(null, "bad", kesha, null));
+        crepo.save(new Cookie2(null, "so-so", jora, null));
         crepo.flush();
         urepo.flush();
 
@@ -190,8 +190,8 @@ public class Case2Tests {
         crepo.flush();
         urepo.flush();
 
-        assertEquals(crepo.count(), 0);
-        assertEquals(urepo.count(), 0);
+        assertEquals(0, crepo.count());
+        assertEquals(0, urepo.count());
     }
 
     @Test
@@ -199,12 +199,12 @@ public class Case2Tests {
     public void testCannotDeleteSeparately() {
         User2 fedor = urepo.save(new User2(null, "Fedor"));
         User2 kesha = urepo.save(new User2(null, "Enokentiy"));
-        Cookie2 good = crepo.save(new Cookie2(null, "good", null, null));
-        Cookie2 bad = crepo.save(new Cookie2(null, "bad", null, null));
-        good.setMyLord(fedor);
-        bad.setMyOldLord(kesha);
-        good = crepo.save(good);
-        bad = crepo.save(bad);
+        Cookie2 goodOne = crepo.save(new Cookie2(null, "good", null, null));
+        Cookie2 badOne = crepo.save(new Cookie2(null, "bad", null, null));
+        goodOne.setMyLord(fedor);
+        badOne.setMyOldLord(kesha);
+        crepo.save(goodOne);
+        crepo.save(badOne);
         crepo.flush();
         urepo.flush();
 
@@ -220,27 +220,27 @@ public class Case2Tests {
     public void testCanDeleteByRelations() {
         User2 fedor = urepo.save(new User2(null, "Fedor"));
         User2 kesha = urepo.save(new User2(null, "Enokentiy"));
-        Cookie2 good = crepo.save(new Cookie2(null, "good", null, null));
-        Cookie2 bad = crepo.save(new Cookie2(null, "bad", null, null));
-        good.setMyLord(fedor);
-        bad.setMyOldLord(kesha);
-        good = crepo.save(good);
-        bad = crepo.save(bad);
+        Cookie2 goodOne = crepo.save(new Cookie2(null, "good", null, null));
+        Cookie2 badOne = crepo.save(new Cookie2(null, "bad", null, null));
+        goodOne.setMyLord(fedor);
+        badOne.setMyOldLord(kesha);
+        goodOne = crepo.save(goodOne);
+        badOne = crepo.save(badOne);
         crepo.flush();
         urepo.flush();
 
         // deletes related entity if it's supported by the used cascadeType
-        crepo.delete(good);
+        crepo.delete(goodOne);
         crepo.flush();
         urepo.flush();
-        assertFalse(crepo.findById(good.getId()).isPresent());
+        assertFalse(crepo.findById(goodOne.getId()).isPresent());
         assertFalse(urepo.findById(fedor.getId()).isPresent());
 
         // doesn't delete related entity if it isn't supported by the used cascadeType
-        crepo.deleteById(bad.getId());
+        crepo.deleteById(badOne.getId());
         crepo.flush();
         urepo.flush();
-        assertFalse(crepo.findById(bad.getId()).isPresent());
+        assertFalse(crepo.findById(badOne.getId()).isPresent());
         assertTrue(urepo.findById(kesha.getId()).isPresent());
 
     }

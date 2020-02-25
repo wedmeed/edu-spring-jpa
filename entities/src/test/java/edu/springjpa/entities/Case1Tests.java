@@ -33,23 +33,23 @@ public class Case1Tests {
 
     @Test
     public void testCanReadData() {
-        Cookie1 good = crepo.save(new Cookie1(null, "good"));
+        Cookie1 goodOne = crepo.save(new Cookie1(null, "good"));
         User1 fedor = urepo.save(new User1(null, "Fedor"));
 
-        assertNotNull(good);
-        assertNotNull(good.getId());
+        assertNotNull(goodOne);
+        assertNotNull(goodOne.getId());
         assertNotNull(fedor);
         assertNotNull(fedor.getId());
 
-        assertTrue(crepo.findById(good.getId()).isPresent());
+        assertTrue(crepo.findById(goodOne.getId()).isPresent());
         assertTrue(urepo.findById(fedor.getId()).isPresent());
     }
 
     @Test
     public void testCanDeleteData() {
-        Cookie1 good = crepo.save(new Cookie1(null, "good"));
-        Cookie1 bad = crepo.save(new Cookie1(null, "bad"));
-        Cookie1 soso = crepo.save(new Cookie1(null, "so-so"));
+        Cookie1 goodOne = crepo.save(new Cookie1(null, "good"));
+        Cookie1 badOne = crepo.save(new Cookie1(null, "bad"));
+        Cookie1 sosoOne = crepo.save(new Cookie1(null, "so-so"));
         User1 fedor = urepo.save(new User1(null, "Fedor"));
         User1 kesha = urepo.save(new User1(null, "Enokentiy"));
         User1 jora = urepo.save(new User1(null, "George"));
@@ -57,18 +57,18 @@ public class Case1Tests {
         urepo.flush();
 
 
-        crepo.delete(good);
-        assertFalse(crepo.findById(good.getId()).isPresent());
-        assertTrue(crepo.findById(soso.getId()).isPresent());
+        crepo.delete(goodOne);
+        assertFalse(crepo.findById(goodOne.getId()).isPresent());
+        assertTrue(crepo.findById(sosoOne.getId()).isPresent());
         urepo.delete(fedor);
         assertFalse(urepo.findById(fedor.getId()).isPresent());
         assertTrue(urepo.findById(jora.getId()).isPresent());
         crepo.flush();
         urepo.flush();
 
-        crepo.deleteById(bad.getId());
-        assertFalse(crepo.findById(bad.getId()).isPresent());
-        assertTrue(crepo.findById(soso.getId()).isPresent());
+        crepo.deleteById(badOne.getId());
+        assertFalse(crepo.findById(badOne.getId()).isPresent());
+        assertTrue(crepo.findById(sosoOne.getId()).isPresent());
         urepo.deleteById(kesha.getId());
         assertFalse(urepo.findById(kesha.getId()).isPresent());
         assertTrue(urepo.findById(jora.getId()).isPresent());
@@ -76,7 +76,7 @@ public class Case1Tests {
         urepo.flush();
 
         crepo.deleteAll();
-        assertFalse(crepo.findById(soso.getId()).isPresent());
+        assertFalse(crepo.findById(sosoOne.getId()).isPresent());
         urepo.deleteAll();
         assertFalse(urepo.findById(jora.getId()).isPresent());
         crepo.flush();
